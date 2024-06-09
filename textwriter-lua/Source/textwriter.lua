@@ -1,8 +1,6 @@
-import 'debug_helpers'
-
 local currentIndex = -1
 local characterCount = -1
-local text = ""
+local writeText = ""
 
 local characterTimeWaits = {}
 local writing = false
@@ -36,20 +34,23 @@ end
 
 function TextWriter.ParseText()
     for i = 0, characterCount-1, 1 do
-        local character = text:sub(i,i)
+        local character = writeText:sub(i,i)
 
         if (SpecialCharacters[character] ~= nil) then
-            characterTimeWaits[i-1] = PrintDelaySetting * PunctuationMultiplier
+            characterTimeWaits[i-1] = Config.PrintDelaySetting * Config.PunctuationMultiplier
         else
-            characterTimeWaits[i-1] = PrintDelaySetting
+            characterTimeWaits[i-1] = Config.PrintDelaySetting
         end
     end
 end
 
 function TextWriter.Write(toWrite)
-    characterCount = string.len(toWrite)
+    pages = PaginateText(toWrite, 100, 50)
+  --  D("Yo", "yo")
+   -- D("Page1", pages[1])
+    characterCount = string.len(pages[1])
     currentIndex = 0
-    text = toWrite
+    writeText = pages[1]
     writing = true
 
     TextWriter.ParseText()
@@ -64,7 +65,7 @@ local function isempty(s)
 function TextWriter.Update(deltaTime)
     if writing then
         TextWriter.SeekCharacters(deltaTime)
-        displayText = text:sub(0,currentIndex)
+        displayText = writeText:sub(0,currentIndex)
         if isempty(displayText) then displayText = "." end
         return displayText
     else

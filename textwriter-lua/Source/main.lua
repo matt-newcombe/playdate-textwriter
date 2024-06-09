@@ -1,5 +1,8 @@
+import 'D'
+import 'io'
+import 'paginate'
+import 'textwriter_config'
 import 'textwriter'
-import 'debug_Helpers'
 import "CoreLibs/graphics"
 
 local gfx = playdate.graphics
@@ -10,13 +13,11 @@ local windowHeight = 50
 local windowXPos = 2
 local windowYPos = 2
 
-local text = "Hello World aaaaaaaaaaaaaa"
+local text = ReadFileAsOneString("textsource.txt")
 
 TextWriter.Write(text)
 
 function playdate.update()
-
-
 	-- reset to get a delta time each frame (should prob just calc from time)
 	local deltaTime = playdate.getElapsedTime()
 	playdate.resetElapsedTime()
