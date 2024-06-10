@@ -1,5 +1,5 @@
 Config = 
 {
-    PrintDelaySetting = 0.15,
+    PrintDelay = 0.1,
     PunctuationMultiplier = 8,
 }

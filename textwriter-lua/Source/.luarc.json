@@ -16,6 +16,6 @@
     "runtime.nonstandardSymbol": ["+=", "-=", "*=", "/=", "//=", "%=", "<<=", ">>=", "&=", "|=", "^="],
     "runtime.version": "Lua 5.4",
     "workspace.library": [
-        "C:/_personal/_repos/radate/playdate-luacats"
+        "/Users/matt.newcombe/personal/_playdate/playdate-textwriter/textwriter-lua"
     ]
 }

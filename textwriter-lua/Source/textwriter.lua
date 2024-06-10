@@ -37,17 +37,15 @@ function TextWriter.ParseText()
         local character = writeText:sub(i,i)
 
         if (SpecialCharacters[character] ~= nil) then
-            characterTimeWaits[i-1] = Config.PrintDelaySetting * Config.PunctuationMultiplier
+            characterTimeWaits[i-1] = Config.PrintDelay * Config.PunctuationMultiplier
         else
-            characterTimeWaits[i-1] = Config.PrintDelaySetting
+            characterTimeWaits[i-1] = Config.PrintDelay
         end
     end
 end
 
 function TextWriter.Write(toWrite)
     pages = PaginateText(toWrite, 100, 50)
-  --  D("Yo", "yo")
-   -- D("Page1", pages[1])
     characterCount = string.len(pages[1])
     currentIndex = 0
     writeText = pages[1]

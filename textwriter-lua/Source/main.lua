@@ -1,21 +1,43 @@
+-- custom imports
 import 'D'
 import 'io'
 import 'paginate'
 import 'textwriter_config'
 import 'textwriter'
+
+-- playdate imports
+import "CoreLibs/object"
 import "CoreLibs/graphics"
+import "CoreLibs/sprites"
+import "CoreLibs/timer"
 
-local gfx = playdate.graphics
+local gfx <const> = playdate.graphics -- do this at the top of your source file
+local spritelib <const> = gfx.sprite
+local screenWidth <const> = playdate.display.getWidth()
+local screenHeight <const> = playdate.display.getHeight()
 
-local windowWidth = 100
-local windowHeight = 50
+local textRectWidth = 100
+local textRectHeight = 50
 
-local windowXPos = 2
-local windowYPos = 2
+local textRectX = 2
+local textRectY = 2
 
-local text = ReadFileAsOneString("textsource.txt")
+local dialogue = ReadFileAsOneString("text/textsource.txt")
+playdate.display.setRefreshRate(50)
+TextWriter.Write(dialogue)
 
-TextWriter.Write(text)
+-- reset the screen to white
+gfx.setBackgroundColor(gfx.kColorWhite)
+gfx.setColor(gfx.kColorWhite)
+gfx.fillRect(0, 0, screenWidth, screenHeight)
+
+local titleSprite = spritelib.new()
+local image = gfx.image.new( 'images/generic_button_finger' )
+assert(image)
+titleSprite:setImage(image)
+titleSprite:moveTo(screenWidth / 2, screenHeight / 2.5)
+titleSprite:setZIndex(950)
+titleSprite:addSprite()
 
 function playdate.update()
 	-- reset to get a delta time each frame (should prob just calc from time)
@@ -25,12 +47,12 @@ function playdate.update()
 	-- Rendering
 	gfx.clear(gfx.kColorWhite)
 	gfx.setColor(gfx.kColorBlack)
-
-	local writtenText = TextWriter.Update(deltaTime)
+	spritelib.update()
 
 	-- Text
-	playdate.graphics.imageWithText(writtenText, windowWidth, windowHeight):draw(windowXPos,windowYPos)
-	playdate.graphics.drawRect(windowXPos, windowYPos, windowWidth, windowHeight)
+	local writtenText = TextWriter.Update(deltaTime)
+	gfx.imageWithText(writtenText, textRectWidth, textRectHeight):draw(textRectX,textRectY)
+	gfx.drawRect(textRectX, textRectY, textRectWidth, textRectHeight)
 
 	-- Debug
 	playdate.drawFPS(250,20)
@@ -40,5 +62,3 @@ function playdate.update()
 	DDraw()
 
 end
-
-
