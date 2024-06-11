@@ -3,14 +3,15 @@ import "CoreLibs/object"
 import "CoreLibs/graphics"
 import "CoreLibs/sprites"
 import "CoreLibs/timer"
+import "CoreLibs/nineslice"
 
 -- custom imports
 import 'D'
 import 'io'
 import 'paginate'
-import 'textwriter_gfx'
 import 'textwriter_config'
 import 'textwriter'
+import 'textwriter_gfx'
 
 -- const defines
 local gfx <const> = playdate.graphics -- do this at the top of your source file
@@ -42,15 +43,17 @@ function playdate.update()
 	local deltaTime = elapsedTime - lastTime
 	lastTime = elapsedTime
 
-	animateButton(deltaTime)
+	-- logic
+	local writtenText = TextWriter.Update(deltaTime)
 	
 	-- Rendering
 	gfx.clear(gfx.kColorWhite)
 	gfx.setColor(gfx.kColorBlack)
+
+	TextWriter.UpdateGraphics(deltaTime)
 	spritelib.update()
 
 	-- Text
-	local writtenText = TextWriter.Update(deltaTime)
 	gfx.imageWithText(writtenText, textRectWidth, textRectHeight):draw(textRectX,textRectY)
 	gfx.drawRect(textRectX, textRectY, textRectWidth, textRectHeight)
 

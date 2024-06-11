@@ -1,11 +1,13 @@
 local currentIndex = -1
 local characterCount = -1
 local writeText = ""
+local currentText = ""
 
 local characterTimeWaits = {}
 local writing = false
 
 local writingTime = 0.0
+
 
 PrintDelaySetting = 0.15
 PunctuationMultiplier = 8
@@ -56,7 +58,11 @@ end
 
 local function isempty(s)
     return s == nil or s == ''
-  end
+end
+
+function TextWriter.GetDisplayingText()
+    return displayText
+end
 
 -- DeltaTime is number in seconds
 -- Text is string

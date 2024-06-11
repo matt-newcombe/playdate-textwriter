@@ -1,19 +1,25 @@
 local gfx <const> = playdate.graphics -- do this at the top of your source file
 local spritelib <const> = gfx.sprite
 
--- Load up sprite image table for button press graphics and add to sprite
-local titleSprite = spritelib.new()
+-- A button to continue text image prompt
+local btnContinue = spritelib.new()
 local btnImageTable = playdate.graphics.imagetable.new("images/btn")
 assert(btnImageTable)
-titleSprite:setImage(btnImageTable:getImage(2))
-titleSprite:moveTo(120, 100)
-titleSprite:setZIndex(950)
-titleSprite:addSprite()
+btnContinue:setImage(btnImageTable:getImage(2))
+btnContinue:moveTo(120, 100)
+btnContinue:setZIndex(950)
+btnContinue:addSprite()
 
+-- Expect a nine slicable texture for the background dialogue box
+local textBoxBg = gfx.nineSlice.new("images/text_box_dark_nine", 5, 5, 5, 3)
+assert(textBoxBg)
+
+-- This function handles the animating of the image prompt which
+-- expects the player to press a button to advance the current pagination page
 local timer = 0.0
 local currFrame = 1
 local switchTime = 0.5
-function animateButton(deltaTime)
+local function AnimateButton(deltaTime)
 	timer += deltaTime
 
 	if timer > switchTime then
@@ -26,6 +32,11 @@ function animateButton(deltaTime)
 		end
 	end
 
-	titleSprite:setImage(btnImageTable:getImage(currFrame))
-	titleSprite:update()
+	btnContinue:setImage(btnImageTable:getImage(currFrame))
+	btnContinue:update()
+end
+
+function TextWriter.UpdateGraphics(deltaTime)
+	textBoxBg:drawInRect(50, 50, 100, 60)
+	AnimateButton(deltaTime)
 end
