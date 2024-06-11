@@ -37,26 +37,22 @@ gfx.setBackgroundColor(gfx.kColorWhite)
 gfx.setColor(gfx.kColorWhite)
 gfx.fillRect(0, 0, screenWidth, screenHeight)
 
+TextWriter.InitGraphics()
+
 function playdate.update()
 	-- reset to get a delta time each frame (should prob just calc from time)
 	local elapsedTime = playdate.getElapsedTime()
 	local deltaTime = elapsedTime - lastTime
 	lastTime = elapsedTime
 
-	-- logic
-	local writtenText = TextWriter.Update(deltaTime)
-	
 	-- Rendering
 	gfx.clear(gfx.kColorWhite)
 	gfx.setColor(gfx.kColorBlack)
-
-	TextWriter.UpdateGraphics(deltaTime)
 	spritelib.update()
 
-	-- Text
-	gfx.imageWithText(writtenText, textRectWidth, textRectHeight):draw(textRectX,textRectY)
-	gfx.drawRect(textRectX, textRectY, textRectWidth, textRectHeight)
-
+	-- logic
+	TextWriter.Update(deltaTime)
+	
 	-- Debug
 	playdate.drawFPS(250,20)
 

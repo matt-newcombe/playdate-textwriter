@@ -71,8 +71,11 @@ function TextWriter.Update(deltaTime)
         TextWriter.SeekCharacters(deltaTime)
         displayText = writeText:sub(0,currentIndex)
         if isempty(displayText) then displayText = "." end
-        return displayText
     else
-        return "."
+        displayText = "."
     end
+
+
+    TextWriter.UpdateGraphics(deltaTime, displayText)
+    return displayText
 end
