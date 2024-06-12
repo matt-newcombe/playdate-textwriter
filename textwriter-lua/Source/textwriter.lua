@@ -20,6 +20,12 @@ TextWriter = {}
 
 local pages = {}
 
+kStateIdle = 0
+kStateWriting = 1
+kStatePagePause = 2
+
+TextWriter.State = kStateIdle
+
 -- This function given a time delta will return the new updated index in the text we have written up to
 function TextWriter.AdvanceInPage(timePassed)
     writingTime = writingTime + timePassed
@@ -35,9 +41,9 @@ function TextWriter.AdvanceInPage(timePassed)
             currentCharacter = 1
 
             if (currentLine > #pages[currentPage]) then
-                currentPage += 1
-                currentLine = 1
-                currentCharacter = 1
+                currentLine -= 1
+                currentCharacter = #line
+                TextWriter.State = kStatePagePause
             end
         end
     end
@@ -48,6 +54,23 @@ function TextWriter.AdvanceInPage(timePassed)
         line = currentLine, 
         char = currentCharacter,
     }
+end
+
+function TextWriter.OnContinue()
+    if (currentPage == #pages) then
+        TextWriter.State = kStateIdle
+    else
+        currentPage += 1
+        currentLine = 1
+        currentCharacter = 1
+
+        TextWriter.State = kStateWriting
+    end
+end
+
+function TextWriter.SkipToEndOfPage()
+    currentLine = #pages[currentPage]
+    currentCharacter = #pages[currentPage][currentLine]
 end
 
 function TextWriter.SetupWritingWaits()
@@ -78,7 +101,7 @@ function TextWriter.Write(toWrite)
     currentPage = 1
     currentLine = 1
     currentCharacter = 1
-    writing = true
+    TextWriter.State = kStateWriting
 
     TextWriter.SetupWritingWaits()
 end
@@ -94,15 +117,19 @@ end
 -- DeltaTime is number in seconds
 -- Text is string
 function TextWriter.Update(deltaTime)
-    if writing then
-        bookmark = TextWriter.AdvanceInPage(deltaTime)
-        displayText = pages[bookmark.page][bookmark.line]:sub(1, bookmark.char)
-        if isempty(displayText) then displayText = "." end
-    else
-        displayText = "."
+    if TextWriter.State == kStateWriting then
+        if (playdate.buttonJustPressed(playdate.kButtonA)) then
+            TextWriter.SkipToEndOfPage()
+        end
+
+        TextWriter.bookmark = TextWriter.AdvanceInPage(deltaTime)
+        TextWriter.UpdateGraphics(deltaTime, pages, TextWriter.bookmark, TextWriter.State)
+    elseif TextWriter.State == kStatePagePause then
+
+        if (playdate.buttonJustPressed(playdate.kButtonA)) then
+            TextWriter.OnContinue()
+        end
+        TextWriter.UpdateGraphics(deltaTime, pages, TextWriter.bookmark, TextWriter.State)
+    elseif TextWriter.State == kStateIdle then
     end
-
-
-    TextWriter.UpdateGraphics(deltaTime, pages, bookmark)
-    return displayText
 end

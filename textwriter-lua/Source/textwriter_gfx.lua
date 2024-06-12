@@ -30,7 +30,7 @@ function TextWriter.InitGraphics()
     btnContinue:setImage(btnImageTable:getImage(2))
     btnContinue:addSprite()
     btnContinue:setZIndex(1 + BASE_Z_LAYER)
-    btnContinue:setOpaque(true)
+    btnContinue:setVisible(false)
 
     -- Expect a nine slicable texture for the background dialogue box
     dialogueNineSlice = gfx.nineSlice.new("images/text_box_nine", 5, 5, 5, 3)
@@ -97,9 +97,40 @@ local function DrawText(pages, bookmark)
 	end
 end
 
-function TextWriter.UpdateGraphics(deltaTime, pages, bookmark)
-    AnimateButton(deltaTime)
-    MoveButtonPromptToBoxPos()
+local function HideContinueButton()
+	btnContinue:setVisible(false)
+end
+
+local function ShowContinueButton()
+	btnContinue:setVisible(true)
+end
+
+local function HideDialogueBackground()
+	textBoxSprite:setVisible(false)
+end
+
+local function ShowDialogueBackground()
+	textBoxSprite:setVisible(true)
+end
+
+function TextWriter.UpdateGraphics(deltaTime, pages, bookmark, state)
+
+	if (TextWriter.State == kStateIdle) then
+		HideContinueButton()
+		HideDialogueBackground()
+		return
+	end
+
+	if (TextWriter.State == kStateWriting) then
+		ShowDialogueBackground()
+		HideContinueButton()
+	elseif (TextWriter.State == kStatePagePause) then
+		MoveButtonPromptToBoxPos()
+		ShowContinueButton()
+		ShowDialogueBackground()
+		AnimateButton(deltaTime)
+	end
+		
     DrawDialogueBackground()
     DrawText(pages, bookmark)
 end
