@@ -1,13 +1,11 @@
-local currentIndex = -1
-local characterCount = -1
-local writeText = ""
-local currentText = ""
+local currentPage = -1
+local currentLine = -1
+local currentCharacter = -1
 
 local characterTimeWaits = {}
 local writing = false
 
 local writingTime = 0.0
-
 
 PrintDelaySetting = 0.15
 PunctuationMultiplier = 8
@@ -20,40 +18,69 @@ SpecialCharacters =
 
 TextWriter = {}
 
--- This function given a time delta will return the new updated index in the text we have written up to
-function TextWriter.SeekCharacters(timePassed)
-    D("CurrIdx",currentIndex)
+local pages = {}
 
+-- This function given a time delta will return the new updated index in the text we have written up to
+function TextWriter.AdvanceInPage(timePassed)
     writingTime = writingTime + timePassed
 
-    while currentIndex < characterCount-1 and writingTime > characterTimeWaits[currentIndex] do
-        writingTime -= characterTimeWaits[currentIndex]
-        currentIndex = currentIndex+1
+    line = pages[currentPage][currentLine]
+
+    while currentCharacter <= #line and writingTime > characterTimeWaits[currentPage][currentLine][currentCharacter] do
+        writingTime -= characterTimeWaits[currentPage][currentLine][currentCharacter]
+        currentCharacter += 1
+
+        if (currentCharacter > #line) then
+            currentLine += 1
+            currentCharacter = 1
+
+            if (currentLine > #pages[currentPage]) then
+                currentPage += 1
+                currentLine = 1
+                currentCharacter = 1
+            end
+        end
     end
 
-    return currentIndex
+    return 
+    {
+        page = currentPage, 
+        line = currentLine, 
+        char = currentCharacter,
+    }
 end
 
-function TextWriter.ParseText()
-    for i = 0, characterCount-1, 1 do
-        local character = writeText:sub(i,i)
+function TextWriter.SetupWritingWaits()
+    -- process as per page per line
+    for pageIdx = 1, #pages do
+        page = pages[pageIdx]
+        table.insert(characterTimeWaits, {})
 
-        if (SpecialCharacters[character] ~= nil) then
-            characterTimeWaits[i-1] = Config.PrintDelay * Config.PunctuationMultiplier
-        else
-            characterTimeWaits[i-1] = Config.PrintDelay
+        for lineIdx = 1, #page do
+            table.insert(characterTimeWaits[pageIdx], {})
+
+            line = page[lineIdx]
+            for i = 1, #line do
+                local character = line:sub(i,i)
+        
+                if (SpecialCharacters[character] ~= nil) then
+                    characterTimeWaits[pageIdx][lineIdx][i] = Config.PrintDelay * Config.PunctuationMultiplier
+                else
+                    characterTimeWaits[pageIdx][lineIdx][i] = Config.PrintDelay
+                end
+            end
         end
     end
 end
 
 function TextWriter.Write(toWrite)
-    pages = PaginateText(toWrite, 100, 50)
-    characterCount = string.len(pages[1])
-    currentIndex = 0
-    writeText = pages[1]
+    pages = Paginate(toWrite, 200, 50)
+    currentPage = 1
+    currentLine = 1
+    currentCharacter = 1
     writing = true
 
-    TextWriter.ParseText()
+    TextWriter.SetupWritingWaits()
 end
 
 local function isempty(s)
@@ -68,14 +95,14 @@ end
 -- Text is string
 function TextWriter.Update(deltaTime)
     if writing then
-        TextWriter.SeekCharacters(deltaTime)
-        displayText = writeText:sub(0,currentIndex)
+        bookmark = TextWriter.AdvanceInPage(deltaTime)
+        displayText = pages[bookmark.page][bookmark.line]:sub(1, bookmark.char)
         if isempty(displayText) then displayText = "." end
     else
         displayText = "."
     end
 
 
-    TextWriter.UpdateGraphics(deltaTime, displayText)
+    TextWriter.UpdateGraphics(deltaTime, pages, bookmark)
     return displayText
 end

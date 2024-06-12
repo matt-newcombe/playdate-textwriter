@@ -78,18 +78,28 @@ local function DrawDialogueBackground()
     gfx.unlockFocus()
 end
 
-local function DrawText(writtenText)
-    local xPos = dialogueBoxX - (dialogueBoxW/2) + textPadding
-    local yPos = dialogueBoxY - (dialogueBoxH/2) + textPadding
-    
-        -- Text
-	gfx.imageWithText(writtenText, dialogueBoxW, dialogueBoxH):draw(xPos, yPos)
+local function DrawText(pages, bookmark)
 
+	local page = pages[bookmark.page]
+	local ySpacing = GetPixelHeight()
+
+	for lineIdx = 1, bookmark.line do
+		local xPos = dialogueBoxX - (dialogueBoxW/2) + textPadding
+		local yPos = dialogueBoxY - (dialogueBoxH/2) + textPadding + (ySpacing * (lineIdx-1))
+
+		if (lineIdx < bookmark.line) then
+			-- it's not the last line so we're rendering the whole line
+			gfx.imageWithText(page[lineIdx], dialogueBoxW, dialogueBoxH):draw(xPos, yPos)
+		else
+			-- it's the last line, sub string up to the boookmark character
+			gfx.imageWithText(page[lineIdx]:sub(1, bookmark.char), dialogueBoxW, dialogueBoxH):draw(xPos, yPos)
+		end
+	end
 end
 
-function TextWriter.UpdateGraphics(deltaTime, writtenText)
+function TextWriter.UpdateGraphics(deltaTime, pages, bookmark)
     AnimateButton(deltaTime)
     MoveButtonPromptToBoxPos()
     DrawDialogueBackground()
-    DrawText(writtenText)
+    DrawText(pages, bookmark)
 end
