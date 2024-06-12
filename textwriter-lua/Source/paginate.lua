@@ -1,7 +1,6 @@
 local substr <const> = string.sub
 local string_byte <const> = string.byte
 
-
 function GetPixelWidth(text)
     myFont = playdate.graphics.getFont(playdate.graphics.font.kVariantNormal)
     pixelWidth = myFont:getTextWidth(text)

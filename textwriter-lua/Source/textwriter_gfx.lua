@@ -16,26 +16,24 @@ local dialogueBoxY = 120
 
 local textPadding = 5
 
-function TextWriter.InitGraphics()
-    -- Sprite for text box (note nineslice image will overwrite this)
-    textBoxSprite = spritelib.new()
-    textBoxSprite:setImage(gfx.image.new(dialogueBoxW, dialogueBoxH, gfx.kColorWhite))
-    textBoxSprite:addSprite()
-    textBoxSprite:setZIndex(0 + BASE_Z_LAYER)
+-- Sprite for text box (note nineslice image will overwrite this)
+textBoxSprite = spritelib.new()
+textBoxSprite:setImage(gfx.image.new(dialogueBoxW, dialogueBoxH, gfx.kColorWhite))
+textBoxSprite:addSprite()
+textBoxSprite:setZIndex(0 + BASE_Z_LAYER)
 
-    -- Sprite Continue Button
-    btnContinue = spritelib.new()
-    btnImageTable = playdate.graphics.imagetable.new("images/btn")
-    assert(btnImageTable)
-    btnContinue:setImage(btnImageTable:getImage(2))
-    btnContinue:addSprite()
-    btnContinue:setZIndex(1 + BASE_Z_LAYER)
-    btnContinue:setVisible(false)
+-- Sprite Continue Button
+btnContinue = spritelib.new()
+btnImageTable = playdate.graphics.imagetable.new("images/btn")
+assert(btnImageTable)
+btnContinue:setImage(btnImageTable:getImage(2))
+btnContinue:addSprite()
+btnContinue:setZIndex(1 + BASE_Z_LAYER)
+btnContinue:setVisible(false)
 
-    -- Expect a nine slicable texture for the background dialogue box
-    dialogueNineSlice = gfx.nineSlice.new("images/text_box_nine", 5, 5, 5, 3)
-    assert(dialogueNineSlice)
-end
+-- Expect a nine slicable texture for the background dialogue box
+dialogueNineSlice = gfx.nineSlice.new("images/text_box_nine", 5, 5, 5, 3)
+assert(dialogueNineSlice)
 
 -- This function handles the animating of the image prompt which
 -- expects the player to press a button to advance the current pagination page
@@ -113,21 +111,26 @@ local function ShowDialogueBackground()
 	textBoxSprite:setVisible(true)
 end
 
-function TextWriter.UpdateGraphics(deltaTime, pages, bookmark, state)
-
-	if (TextWriter.State == kStateIdle) then
+function TextWriter.SetGraphicsState(state)
+	if (state == kStateWriting) then
+		ShowDialogueBackground()
+		HideContinueButton()
+	elseif (state == kStatePagePause) then
+		ShowContinueButton()
+	elseif (state == kStateIdle) then
 		HideContinueButton()
 		HideDialogueBackground()
+	end
+end
+
+function TextWriter.UpdateGraphics(deltaTime, pages, bookmark, state)
+	MoveButtonPromptToBoxPos()
+
+	if (TextWriter.State == kStateIdle) then
 		return
 	end
 
-	if (TextWriter.State == kStateWriting) then
-		ShowDialogueBackground()
-		HideContinueButton()
-	elseif (TextWriter.State == kStatePagePause) then
-		MoveButtonPromptToBoxPos()
-		ShowContinueButton()
-		ShowDialogueBackground()
+	if (TextWriter.State == kStatePagePause) then
 		AnimateButton(deltaTime)
 	end
 		

@@ -3,7 +3,6 @@ local currentLine = -1
 local currentCharacter = -1
 
 local characterTimeWaits = {}
-local writing = false
 
 local writingTime = 0.0
 
@@ -14,6 +13,7 @@ SpecialCharacters =
 {
     '.',
     ',',
+    '?'
 }
 
 TextWriter = {}
@@ -43,7 +43,7 @@ function TextWriter.AdvanceInPage(timePassed)
             if (currentLine > #pages[currentPage]) then
                 currentLine -= 1
                 currentCharacter = #line
-                TextWriter.State = kStatePagePause
+                TextWriter.SetState(kStatePagePause)
             end
         end
     end
@@ -58,13 +58,13 @@ end
 
 function TextWriter.OnContinue()
     if (currentPage == #pages) then
-        TextWriter.State = kStateIdle
+        TextWriter.SetState(kStateIdle)
     else
         currentPage += 1
         currentLine = 1
         currentCharacter = 1
 
-        TextWriter.State = kStateWriting
+        TextWriter.SetState(kStateWriting)
     end
 end
 
@@ -101,7 +101,7 @@ function TextWriter.Write(toWrite)
     currentPage = 1
     currentLine = 1
     currentCharacter = 1
-    TextWriter.State = kStateWriting
+    TextWriter.SetState(kStateWriting)
 
     TextWriter.SetupWritingWaits()
 end
@@ -112,6 +112,11 @@ end
 
 function TextWriter.GetDisplayingText()
     return displayText
+end
+
+function TextWriter.SetState(state)
+    TextWriter.State = state
+    TextWriter.SetGraphicsState(state)
 end
 
 -- DeltaTime is number in seconds

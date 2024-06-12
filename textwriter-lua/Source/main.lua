@@ -37,8 +37,6 @@ gfx.setBackgroundColor(gfx.kColorWhite)
 gfx.setColor(gfx.kColorWhite)
 gfx.fillRect(0, 0, screenWidth, screenHeight)
 
-TextWriter.InitGraphics()
-
 function playdate.update()
 	-- reset to get a delta time each frame (should prob just calc from time)
 	local elapsedTime = playdate.getElapsedTime()
