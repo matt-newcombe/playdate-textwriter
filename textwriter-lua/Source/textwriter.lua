@@ -97,7 +97,7 @@ function TextWriter.SetupWritingWaits()
 end
 
 function TextWriter.Write(toWrite)
-    pages = Paginate(toWrite, 200, 50)
+    pages = Paginate(toWrite, TextWriter.Graphics.GetDialogueMaxWidth(), TextWriter.Graphics.GetDialogueHeightLimit())
     currentPage = 1
     currentLine = 1
     currentCharacter = 1
@@ -116,7 +116,18 @@ end
 
 function TextWriter.SetState(state)
     TextWriter.State = state
-    TextWriter.SetGraphicsState(state)
+    TextWriter.Graphics.SetGraphicsState(state)
+end
+
+function TextWriter.ConfigureDialogue(xPos, yPos, width, height)
+    Config.DialogueBoxPos.x = xPos
+    Config.DialogueBoxPos.y = yPos
+    
+    Config.DialogueBoxSize.width = width
+    Config.DialogueBoxSize.height = height
+
+    -- ensure we call the resize as sprite dimensions need to change
+    TextWriter.Graphics.Resize()
 end
 
 -- DeltaTime is number in seconds
@@ -128,13 +139,14 @@ function TextWriter.Update(deltaTime)
         end
 
         TextWriter.bookmark = TextWriter.AdvanceInPage(deltaTime)
-        TextWriter.UpdateGraphics(deltaTime, pages, TextWriter.bookmark, TextWriter.State)
+        TextWriter.Graphics.UpdateGraphics(deltaTime, pages, TextWriter.bookmark, TextWriter.State)
     elseif TextWriter.State == kStatePagePause then
 
         if (playdate.buttonJustPressed(playdate.kButtonA)) then
             TextWriter.OnContinue()
         end
-        TextWriter.UpdateGraphics(deltaTime, pages, TextWriter.bookmark, TextWriter.State)
+
+        TextWriter.Graphics.UpdateGraphics(deltaTime, pages, TextWriter.bookmark, TextWriter.State)
     elseif TextWriter.State == kStateIdle then
     end
 end

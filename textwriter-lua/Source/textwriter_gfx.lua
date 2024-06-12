@@ -7,18 +7,13 @@ local btnImageTable = {}
 local textBoxSprite = {}
 
 local BASE_Z_LAYER = 300
-
-local dialogueBoxW = 200
-local dialogueBoxH = 90
-
-local dialogueBoxX = 150
-local dialogueBoxY = 120
-
 local textPadding = 5
+
+TextWriter.Graphics = {}
 
 -- Sprite for text box (note nineslice image will overwrite this)
 textBoxSprite = spritelib.new()
-textBoxSprite:setImage(gfx.image.new(dialogueBoxW, dialogueBoxH, gfx.kColorWhite))
+textBoxSprite:setImage(gfx.image.new(100, 50, gfx.kColorWhite))
 textBoxSprite:addSprite()
 textBoxSprite:setZIndex(0 + BASE_Z_LAYER)
 
@@ -58,21 +53,23 @@ local function AnimateButton(deltaTime)
 end
 
 local function MoveButtonPromptToBoxPos()
-    local xOffset = -10
-    local yOffset = -10
+    local xOffset = 10
+    local yOffset = 10
 
-    local xPos = dialogueBoxX + dialogueBoxW/2 - xOffset
-    local yPos = dialogueBoxY + dialogueBoxH/2 - yOffset
+    local xPos = Config.DialogueBoxPos.x + Config.DialogueBoxSize.width - xOffset
+    local yPos = Config.DialogueBoxPos.y + Config.DialogueBoxSize.height - yOffset
 
     btnContinue:moveTo(xPos, yPos)
 end
 
 local function DrawDialogueBackground()
-    textBoxSprite:moveTo(dialogueBoxX, dialogueBoxY)
+	-- Sprites render centered
+	textBoxSprite:setImage(gfx.image.new(Config.DialogueBoxSize.width, Config.DialogueBoxSize.height, gfx.kColorWhite))
+    textBoxSprite:moveTo(Config.DialogueBoxPos.x + Config.DialogueBoxSize.width/2, Config.DialogueBoxPos.y + Config.DialogueBoxSize.height/2)
 
     -- use lock focus to overwrite the spriteNS image with the nineslice draw
     gfx.lockFocus(textBoxSprite:getImage())
-    dialogueNineSlice:drawInRect(0, 0, dialogueBoxW, dialogueBoxH)
+    dialogueNineSlice:drawInRect(0, 0, Config.DialogueBoxSize.width, Config.DialogueBoxSize.height)
     gfx.unlockFocus()
 end
 
@@ -81,37 +78,53 @@ local function DrawText(pages, bookmark)
 	local page = pages[bookmark.page]
 	local ySpacing = GetPixelHeight()
 
+	local w = Config.DialogueBoxSize.width
+	local h = Config.DialogueBoxSize.height
+
+	local x = Config.DialogueBoxPos.x
+	local y = Config.DialogueBoxPos.y
+
 	for lineIdx = 1, bookmark.line do
-		local xPos = dialogueBoxX - (dialogueBoxW/2) + textPadding
-		local yPos = dialogueBoxY - (dialogueBoxH/2) + textPadding + (ySpacing * (lineIdx-1))
+		local xPos = x + textPadding
+		local yPos = y + textPadding + (ySpacing * (lineIdx-1))
 
 		if (lineIdx < bookmark.line) then
 			-- it's not the last line so we're rendering the whole line
-			gfx.imageWithText(page[lineIdx], dialogueBoxW, dialogueBoxH):draw(xPos, yPos)
+			gfx.imageWithText(page[lineIdx], w, h):draw(xPos, yPos)
 		else
 			-- it's the last line, sub string up to the boookmark character
-			gfx.imageWithText(page[lineIdx]:sub(1, bookmark.char), dialogueBoxW, dialogueBoxH):draw(xPos, yPos)
+			gfx.imageWithText(page[lineIdx]:sub(1, bookmark.char), w, h):draw(xPos, yPos)
 		end
 	end
 end
 
-local function HideContinueButton()
-	btnContinue:setVisible(false)
+local function HideContinueButton() btnContinue:setVisible(false) end
+local function ShowContinueButton() btnContinue:setVisible(true) end
+local function HideDialogueBackground() textBoxSprite:setVisible(false) end
+local function ShowDialogueBackground() textBoxSprite:setVisible(true) end
+
+function TextWriter.Graphics.Resize()
+	textBoxSprite:setImage(gfx.image.new(Config.DialogueBoxSize.width, Config.DialogueBoxSize.width, gfx.kColorWhite))
 end
 
-local function ShowContinueButton()
-	btnContinue:setVisible(true)
+
+function TextWriter.Graphics.GetDialogueMaxWidth()
+	maxWidth = Config.DialogueBoxSize.width
+	- 10 --nineslice top and bottom added together
+	- 5 -- padding
+
+	return maxWidth
 end
 
-local function HideDialogueBackground()
-	textBoxSprite:setVisible(false)
+function TextWriter.Graphics.GetDialogueHeightLimit()
+	heightLimit = Config.DialogueBoxSize.height
+	- 10 --nineslice top and bottom added together
+	- 5 -- padding
+
+	return heightLimit
 end
 
-local function ShowDialogueBackground()
-	textBoxSprite:setVisible(true)
-end
-
-function TextWriter.SetGraphicsState(state)
+function TextWriter.Graphics.SetGraphicsState(state)
 	if (state == kStateWriting) then
 		ShowDialogueBackground()
 		HideContinueButton()
@@ -123,7 +136,7 @@ function TextWriter.SetGraphicsState(state)
 	end
 end
 
-function TextWriter.UpdateGraphics(deltaTime, pages, bookmark, state)
+function TextWriter.Graphics.UpdateGraphics(deltaTime, pages, bookmark, state)
 	MoveButtonPromptToBoxPos()
 
 	if (TextWriter.State == kStateIdle) then

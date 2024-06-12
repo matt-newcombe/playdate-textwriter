@@ -1,3 +1,5 @@
+import 'textwriter_config'
+
 -- playdate imports
 import "CoreLibs/object"
 import "CoreLibs/graphics"
@@ -9,7 +11,6 @@ import "CoreLibs/nineslice"
 import 'D'
 import 'io'
 import 'paginate'
-import 'textwriter_config'
 import 'textwriter'
 import 'textwriter_gfx'
 
@@ -19,13 +20,7 @@ local spritelib <const> = gfx.sprite
 local screenWidth <const> = playdate.display.getWidth()
 local screenHeight <const> = playdate.display.getHeight()
 
--- dialogue box pos (MATT: Should move to text writer)
-local textRectWidth = 100
-local textRectHeight = 50
-
-local textRectX = 2
-local textRectY = 2
-
+TextWriter.ConfigureDialogue(0,0,300,100)
 local dialogue = ReadFileAsOneString("text/textsource.txt")
 TextWriter.Write(dialogue)
 
@@ -57,6 +52,6 @@ function playdate.update()
 	D("deltaTime", deltaTime)
 	D("elapsedTime", elapsedTime)
 
-	DDraw()
+	--DDraw()
 
 end

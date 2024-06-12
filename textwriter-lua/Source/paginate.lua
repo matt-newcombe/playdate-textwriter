@@ -19,7 +19,12 @@ end
 
 function GetMaxLines(h)
     pixelHeight = GetPixelHeight()
-    maxLines = math.floor(h/pixelHeight) + 1 -- idx from 1
+    maxLines = math.floor(h/pixelHeight)
+
+    D("fontHeight", GetPixelHeight())
+    D("boxHeight", h)
+    D("maxLine", maxLines)
+    
     return maxLines
 end
 
